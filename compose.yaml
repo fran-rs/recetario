@@ -1,0 +1,9 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: recetario
+      POSTGRES_PASSWORD: recetario123
+      POSTGRES_DB: recetario_db
+    ports: 
+      - "5432:5432"
