@@ -1,5 +1,6 @@
 const express = require('express')
 const cors = require('cors')
+const pool = require('./db/database')
 
 const app = express()
 
@@ -7,27 +8,25 @@ app.use(cors())
 
 const PORT = 3000
 
-app.get('/', (req, res) => {
-  res.send('Hola desde mi backend')
+pool.query('SELECT NOW()', (error, result) => {
+  if (error) {
+    console.error('Error al conectar con PostgreSQL:', error)
+  } else {
+    console.log('Conección con PostgreSQL exitosa')
+    console.log('Hora de PostgreSQL:', result.rows[0].now)
+  }
 })
 
-app.get('/api/recipes', (req, res) => {
-  const recipes = [
-    {
-      id: 1,
-      name: 'Pasta con tomate'
-    },
-    {
-      id: 2,
-      name: 'Torta de chocolate'
-    },
-    {
-      id: 3,
-      name: 'Ensalada Cesar'
-    }
-  ]
-
-  res.json(recipes)
+app.get('/api/recipes', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM recipes')
+    res.json(result.rows)
+  } catch (error){
+    console.error('Error al obtener las recetas:', error)
+    res.status(500).json({
+      error: 'Error al obtener las recetas'
+    })
+  }
 })
 
 app.listen(PORT, () => {
