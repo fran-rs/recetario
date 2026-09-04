@@ -5,6 +5,7 @@ const pool = require('./db/database')
 const app = express()
 
 app.use(cors())
+app.use(express.json())
 
 const PORT = 3000
 
@@ -17,14 +18,21 @@ pool.query('SELECT NOW()', (error, result) => {
   }
 })
 
-app.get('/api/recipes', async (req, res) => {
+app.post('/api/recipes', async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM recipes')
-    res.json(result.rows)
+    const { name, description, ingredients, instructions } = req.body
+
+    const result = await pool.query(
+      `INSERT INTO recipes (name,description, ingredients, instructions)
+      VALUES ($1, $2, $3, $4)
+      RETURNING *`,
+      [name, description, ingredients, instructions]
+    )
+    res.status(201).json(result.rows[0])
   } catch (error){
-    console.error('Error al obtener las recetas:', error)
+    console.error('Error al crear las recetas:', error)
     res.status(500).json({
-      error: 'Error al obtener las recetas'
+      error: 'Error al crear las recetas'
     })
   }
 })
